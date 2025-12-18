@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recordatorio de Citas - Consultorio Dental</title>
+    <style>
+        :root {
+            --color-white: rgba(255, 255, 255, 1);
+            --color-black: rgba(0, 0, 0, 1);
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-red-500: rgba(192, 21, 47, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-green-500: rgba(34, 197, 94, 1);
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-orange-500: rgba(168, 75, 47, 1);
+            --font-family-base: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: linear-gradient(135deg, #e8f5f7 0%, #f0fafb 100%);
+            color: var(--color-slate-900);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: var(--color-teal-500);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--color-slate-500);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--color-white);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(33, 128, 141, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--color-slate-900);
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="tel"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-teal-500);
+            box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--color-teal-500);
+            color: var(--color-white);
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-teal-600);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: var(--color-red-500);
+            color: var(--color-white);
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background: var(--color-red-400);
+        }
+
+        .btn-success {
+            background: var(--color-green-500);
+            color: var(--color-white);
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .appointment-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .appointment-item {
+            background: linear-gradient(135deg, #f8fbfc 0%, #e8f5f7 100%);
+            border: 2px solid var(--color-teal-500);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .appointment-item:hover {
+            box-shadow: 0 4px 12px rgba(33, 128, 141, 0.2);
+            transform: translateX(4px);
+        }
+
+        .appointment-item.alert {
+            border-color: var(--color-orange-500);
+            background: linear-gradient(135deg, #fff8f0 0%, #ffe8d1 100%);
+        }
+
+        .appointment-item.upcoming {
+            border-color: var(--color-red-500);
+            background: linear-gradient(135deg, #ffe8e8 0%, #ffd9d9 100%);
+        }
+
+        .appointment-info {
+            flex: 1;
+        }
+
+        .patient-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-slate-900);
+            margin-bottom: 4px;
+        }
+
+        .patient-details {
+            font-size: 13px;
+            color: var(--color-slate-500);
+            margin-bottom: 6px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .status-next {
+            background: var(--color-green-500);
+            color: white;
+        }
+
+        .status-soon {
+            background: var(--color-orange-500);
+            color: white;
+        }
+
+        .status-alert {
+            background: var(--color-red-500);
+            color: white;
+        }
+
+        .appointment-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--color-slate-500);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .timer-section {
+            margin-top: 24px;
+        }
+
+        .current-time {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-teal-500);
+            padding: 20px;
+            background: linear-gradient(135deg, #f0fafb 0%, #e0f2f4 100%);
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px 16px;
+            font-size: 12px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-white);
+            border-left: 4px solid var(--color-teal-500);
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+        }
+
+        .notification.error {
+            border-left-color: var(--color-red-500);
+        }
+
+        .notification.success {
+            border-left-color: var(--color-green-500);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--color-white);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--color-gray-300);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-teal-500);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--color-slate-500);
+            margin-top: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦷 Recordatorio de Citas</h1>
+            <p class="subtitle">Sistema de alarmas para tu consultorio dental</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCitas">0</div>
+                <div class="stat-label">Total de Citas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="citasHoy">0</div>
+                <div class="stat-label">Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="proximaCita">--:--</div>
+                <div class="stat-label">Próxima</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2 style="margin-bottom: 20px; color: var(--color-teal-500);">Registrar Nueva Cita</h2>
+                
+                <div class="form-group">
+                    <label for="paciente">Nombre del Paciente *</label>
+                    <input type="text" id="paciente" placeholder="Ej: Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" placeholder="Ej: +51 999 999 999">
+                </div>
+
+                <div class="form-group">
+                    <label for="servicio">Tipo de Servicio</label>
+                    <select id="servicio">
+                        <option value="Consulta">Consulta</option>
+                        <option value="Limpieza">Limpieza</option>
+                        <option value="Ortodoncia">Ortodoncia</option>
+                        <option value="Resina">Resina</option>
+                        <option value="Extracción">Extracción</option>
+                        <option value="Tratamiento">Tratamiento de conducto</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha *</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="hora">Hora *</label>
+                    <input type="time" id="hora" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notas">Notas</label>
+                    <input type="text" id="notas" placeholder="Información adicional" style="min-height: 60px; padding: 10px 12px;">
+                </div>
+
+                <button class="btn btn-primary" onclick="agregarCita()">Agregar Cita</button>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 16px; color: var(--color-teal-500);">Control de Tiempo</h2>
+                
+                <div class="current-time" id="currentTime">--:--:--</div>
+
+                <div class="controls">
+                    <button class="btn btn-primary btn-small" onclick="toggleMonitor()">
+                        <span id="monitorBtnText">Iniciar Monitor</span>
+                    </button>
+                    <button class="btn btn-success btn-small" onclick="testAlarm()">Test Audio</button>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--color-slate-900);">Configuración de Alertas</h3>
+                    <div class="form-group" style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <input type="checkbox" id="alert30min" checked style="width: 18px; height: 18px; cursor: pointer;">
+                        <label style="margin: 0 0 0 8px; margin-bottom: 0; cursor: pointer;">Alerta 30 min antes</label>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; margin-bottom: 12px;">
+                        <input type="checkbox" id="alert15min" checked style="width: 18px; height: 18px; cursor: pointer;">
+                        <label style="margin: 0 0 0 8px; margin-bottom: 0; cursor: pointer;">Alerta 15 min antes</label>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center;">
+                        <input type="checkbox" id="alertExacta" checked style="width: 18px; height: 18px; cursor: pointer;">
+                        <label style="margin: 0 0 0 8px; margin-bottom: 0; cursor: pointer;">Alerta a la hora exacta</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 16px; color: var(--color-teal-500);">Citas Programadas</h2>
+            <div id="appointmentsList" class="appointment-list">
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <p>No hay citas registradas. Agrega una nueva cita para comenzar.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        let monitorActive = false;
+        let alarmSoundInterval;
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        function speakMessage(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function playAlarmSound() {
+            const now = new Date();
+            const frequencies = [800, 600, 800, 600];
+            let index = 0;
+
+            const playBeep = () => {
+                if (index >= frequencies.length) {
+                    index = 0;
+                }
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequencies[index];
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+                
+                index++;
+            };
+
+            for (let i = 0; i < 8; i++) {
+                setTimeout(playBeep, i * 250);
+            }
+        }
+
+        function triggerAlarm(appointment, type) {
+            const timeTypes = {
+                'alert30': '30 minutos antes de la cita',
+                'alert15': '15 minutos antes de la cita',
+                'alertExacta': 'Hora de la cita'
+            };
+
+            playAlarmSound();
+            
+            const message = `Alerta. Tienes cita con ${appointment.paciente} para ${appointment.servicio}. ${timeTypes[type]}.`;
+            setTimeout(() => {
+                speakMessage(message);
+            }, 500);
+
+            showNotification(`⏰ ${message}`, 'success');
+        }
+
+        function agregarCita() {
+            const paciente = document.getElementById('paciente').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const servicio = document.getElementById('servicio').value;
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const notas = document.getElementById('notas').value.trim();
+
+            if (!paciente || !fecha || !hora) {
+                showNotification('Por favor completa los campos requeridos', 'error');
+                return;
+            }
+
+            const appointment = {
+                id: Date.now(),
+                paciente,
+                telefono,
+                servicio,
+                fecha,
+                hora,
+                notas,
+                triggered30: false,
+                triggered15: false,
+                triggeredExacta: false
+            };
+
+            appointments.push(appointment);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            
+            renderAppointments();
+            showNotification(`✅ Cita de ${paciente} agregada correctamente`, 'success');
+            
+            document.getElementById('paciente').value = '';
+            document.getElementById('telefono').value = '';
+            document.getElementById('servicio').value = 'Consulta';
+            document.getElementById('fecha').value = '';
+            document.getElementById('hora').value = '';
+            document.getElementById('notas').value = '';
+        }
+
+        function eliminarCita(id) {
+            appointments = appointments.filter(a => a.id !== id);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            renderAppointments();
+            showNotification('Cita eliminada', 'success');
+        }
+
+        function renderAppointments() {
+            const now = new Date();
+            const sortedAppointments = [...appointments].sort((a, b) => {
+                const dateA = new Date(`${a.fecha}T${a.hora}`);
+                const dateB = new Date(`${b.fecha}T${b.hora}`);
+                return dateA - dateB;
+            });
+
+            const list = document.getElementById('appointmentsList');
+            
+            if (sortedAppointments.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p>No hay citas registradas. Agrega una nueva cita para comenzar.</p>
+                    </div>
+                `;
+                updateStats();
+                return;
+            }
+
+            list.innerHTML = sortedAppointments.map(apt => {
+                const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
+                const diff = appointmentTime - now;
+                const minutesDiff = Math.floor(diff / (1000 * 60));
+                
+                let statusClass = '';
+                let statusText = '';
+                let statusType = '';
+
+                if (diff < 0) {
+                    statusClass = 'completed';
+                    statusText = '✓ Completada';
+                    statusType = 'status-next';
+                } else if (minutesDiff <= 15) {
+                    statusClass = 'upcoming';
+                    statusText = '⚠️ Próximamente';
+                    statusType = 'status-alert';
+                } else if (minutesDiff <= 30) {
+                    statusClass = 'alert';
+                    statusText = '🔔 En breve';
+                    statusType = 'status-soon';
+                } else {
+                    statusText = '📅 Próxima';
+                    statusType = 'status-next';
+                }
+
+                return `
+                    <div class="appointment-item ${statusClass}">
+                        <div class="appointment-info">
+                            <div class="patient-name">${apt.paciente}</div>
+                            <div class="patient-details">
+                                📞 ${apt.telefono || 'Sin teléfono'} | 🏥 ${apt.servicio}
+                            </div>
+                            <div class="patient-details">
+                                📅 ${new Date(apt.fecha).toLocaleDateString('es-PE')} - ⏰ ${apt.hora}
+                            </div>
+                            ${apt.notas ? `<div class="patient-details">📝 ${apt.notas}</div>` : ''}
+                            <span class="status-badge ${statusType}">${statusText}</span>
+                        </div>
+                        <button class="btn btn-danger" onclick="eliminarCita(${apt.id})">Eliminar</button>
+                    </div>
+                `;
+            }).join('');
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+
+            document.getElementById('totalCitas').textContent = appointments.length;
+            document.getElementById('citasHoy').textContent = appointments.filter(a => a.fecha === today).length;
+
+            const nextApt = appointments
+                .filter(a => new Date(`${a.fecha}T${a.hora}`) > now)
+                .sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`))
+                .shift();
+
+            if (nextApt) {
+                document.getElementById('proximaCita').textContent = nextApt.hora;
+            } else {
+                document.getElementById('proximaCita').textContent = '--:--';
+            }
+        }
+
+        function checkAlarms() {
+            const now = new Date();
+
+            appointments.forEach(apt => {
+                const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
+                const diff = appointmentTime - now;
+                const minutesDiff = Math.floor(diff / (1000 * 60));
+                const secondsDiff = Math.floor((diff / 1000) % 60);
+
+                // Alerta 30 minutos antes
+                if (document.getElementById('alert30min').checked && minutesDiff === 30 && secondsDiff === 0 && !apt.triggered30) {
+                    triggerAlarm(apt, 'alert30');
+                    apt.triggered30 = true;
+                }
+
+                // Alerta 15 minutos antes
+                if (document.getElementById('alert15min').checked && minutesDiff === 15 && secondsDiff === 0 && !apt.triggered15) {
+                    triggerAlarm(apt, 'alert15');
+                    apt.triggered15 = true;
+                }
+
+                // Alerta a la hora exacta
+                if (document.getElementById('alertExacta').checked && minutesDiff === 0 && secondsDiff === 0 && !apt.triggeredExacta) {
+                    triggerAlarm(apt, 'alertExacta');
+                    apt.triggeredExacta = true;
+                }
+            });
+
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+        }
+
+        function toggleMonitor() {
+            monitorActive = !monitorActive;
+            const btn = document.getElementById('monitorBtnText');
+            
+            if (monitorActive) {
+                btn.textContent = 'Monitor Activo ✓';
+                alarmSoundInterval = setInterval(() => {
+                    updateCurrentTime();
+                    checkAlarms();
+                }, 1000);
+                showNotification('Monitor de citas activado', 'success');
+            } else {
+                btn.textContent = 'Iniciar Monitor';
+                clearInterval(alarmSoundInterval);
+                showNotification('Monitor de citas desactivado', 'success');
+            }
+        }
+
+        function testAlarm() {
+            playAlarmSound();
+            setTimeout(() => {
+                speakMessage('Sistema de alarma funcionando correctamente. Las alertas se activarán en los tiempos programados.');
+            }, 500);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.remove();
+            }, 4000);
+        }
+
+        // Inicializar
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
+        renderAppointments();
+        updateStats();
+
+        // Restablecer alarmas diarias
+        function resetDailyAlarms() {
+            const now = new Date();
+            appointments = appointments.map(apt => {
+                const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
+                if (appointmentTime < now && appointmentTime.toDateString() !== now.toDateString()) {
+                    return {
+                        ...apt,
+                        triggered30: false,
+                        triggered15: false,
+                        triggeredExacta: false
+                    };
+                }
+                return apt;
+            });
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+        }
+
+        setInterval(resetDailyAlarms, 60000);
+    </script>
+</body>
+</html>
