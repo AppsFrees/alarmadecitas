@@ -344,6 +344,62 @@
                 grid-template-columns: repeat(3, 1fr);
             }
         }
+
+        .wp-options {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(33, 128, 141, 0.05);
+            border: 1px dashed rgba(33, 128, 141, 0.4);
+        }
+
+        .wp-options-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-slate-900);
+            margin-bottom: 6px;
+        }
+
+        .wp-options-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .wp-options-row label {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 0;
+            color: var(--color-slate-500);
+        }
+
+        .wp-options-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            cursor: pointer;
+        }
+
+        .wp-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(37, 211, 102, 0.15);
+            color: #128c7e;
+            border: 1px solid rgba(18, 140, 126, 0.3);
+            margin-left: 6px;
+        }
+
+        .wp-config-text {
+            font-size: 11px;
+            color: var(--color-slate-500);
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -408,6 +464,21 @@
                 <div class="form-group">
                     <label for="notas">Notas</label>
                     <input type="text" id="notas" placeholder="Información adicional" style="min-height: 60px; padding: 10px 12px;">
+                </div>
+
+                <div class="form-group">
+                    <div class="wp-options">
+                        <div class="wp-options-title">Recordatorio por WhatsApp al paciente</div>
+                        <div class="wp-options-row">
+                            <label><input type="checkbox" id="wp1h"> 1 hora antes</label>
+                            <label><input type="checkbox" id="wp2h"> 2 horas antes</label>
+                            <label><input type="checkbox" id="wp4h"> 4 horas antes</label>
+                            <label><input type="checkbox" id="wp6h"> 6 horas antes</label>
+                        </div>
+                        <p class="wp-config-text">
+                            Aquí solo se guarda la configuración. El envío real de WhatsApp lo hará tu backend (Twilio / API WhatsApp Business).
+                        </p>
+                    </div>
                 </div>
 
                 <button class="btn btn-primary" onclick="agregarCita()">Agregar Cita</button>
@@ -479,7 +550,6 @@
         }
 
         function playAlarmSound() {
-            const now = new Date();
             const frequencies = [800, 600, 800, 600];
             let index = 0;
 
@@ -528,6 +598,47 @@
             showNotification(`⏰ ${message}`, 'success');
         }
 
+        function buildWhatsAppMessage(appointment) {
+            const fechaLocal = new Date(appointment.fecha).toLocaleDateString('es-PE');
+            return `Hola ${appointment.paciente}, te recordamos tu cita de ${appointment.servicio} el ${fechaLocal} a las ${appointment.hora} en el consultorio dental. Por favor confirma tu asistencia.`;
+        }
+
+        function sendWhatsAppReminder(appointment, hoursBefore) {
+            if (!appointment.telefono) {
+                console.warn('No hay teléfono para este paciente, no se puede preparar WhatsApp');
+                return;
+            }
+            const msg = buildWhatsAppMessage(appointment);
+            const payload = {
+                telefono: appointment.telefono,
+                paciente: appointment.paciente,
+                servicio: appointment.servicio,
+                fecha: appointment.fecha,
+                hora: appointment.hora,
+                horas_antes: hoursBefore,
+                mensaje: msg
+            };
+
+            console.log('Payload WhatsApp listo para backend:', payload);
+
+            showNotification(
+                `💬 Recordatorio WhatsApp (${hoursBefore}h antes) preparado para ${appointment.paciente}. Conecta tu backend para enviarlo automáticamente.`,
+                'success'
+            );
+
+            // Ejemplo de cómo se conectaría a tu backend:
+            /*
+            fetch('https://tu-backend.com/api/whatsapp-recordatorio', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => console.log('WhatsApp enviado', data))
+            .catch(err => console.error('Error enviando WhatsApp', err));
+            */
+        }
+
         function agregarCita() {
             const paciente = document.getElementById('paciente').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
@@ -535,6 +646,11 @@
             const fecha = document.getElementById('fecha').value;
             const hora = document.getElementById('hora').value;
             const notas = document.getElementById('notas').value.trim();
+
+            const wp1h = document.getElementById('wp1h').checked;
+            const wp2h = document.getElementById('wp2h').checked;
+            const wp4h = document.getElementById('wp4h').checked;
+            const wp6h = document.getElementById('wp6h').checked;
 
             if (!paciente || !fecha || !hora) {
                 showNotification('Por favor completa los campos requeridos', 'error');
@@ -549,9 +665,17 @@
                 fecha,
                 hora,
                 notas,
+                wp1h,
+                wp2h,
+                wp4h,
+                wp6h,
                 triggered30: false,
                 triggered15: false,
-                triggeredExacta: false
+                triggeredExacta: false,
+                wpSent1h: false,
+                wpSent2h: false,
+                wpSent4h: false,
+                wpSent6h: false
             };
 
             appointments.push(appointment);
@@ -566,6 +690,10 @@
             document.getElementById('fecha').value = '';
             document.getElementById('hora').value = '';
             document.getElementById('notas').value = '';
+            document.getElementById('wp1h').checked = false;
+            document.getElementById('wp2h').checked = false;
+            document.getElementById('wp4h').checked = false;
+            document.getElementById('wp6h').checked = false;
         }
 
         function eliminarCita(id) {
@@ -573,6 +701,17 @@
             localStorage.setItem('appointments', JSON.stringify(appointments));
             renderAppointments();
             showNotification('Cita eliminada', 'success');
+        }
+
+        function getWhatsappConfigText(apt) {
+            const selected = [];
+            if (apt.wp1h) selected.push('1h');
+            if (apt.wp2h) selected.push('2h');
+            if (apt.wp4h) selected.push('4h');
+            if (apt.wp6h) selected.push('6h');
+
+            if (selected.length === 0) return '';
+            return `WhatsApp: ${selected.join(' / ')} antes`;
         }
 
         function renderAppointments() {
@@ -622,10 +761,15 @@
                     statusType = 'status-next';
                 }
 
+                const wpText = getWhatsappConfigText(apt);
+
                 return `
                     <div class="appointment-item ${statusClass}">
                         <div class="appointment-info">
-                            <div class="patient-name">${apt.paciente}</div>
+                            <div class="patient-name">
+                                ${apt.paciente}
+                                ${wpText ? `<span class="wp-badge">WA programado</span>` : ''}
+                            </div>
                             <div class="patient-details">
                                 📞 ${apt.telefono || 'Sin teléfono'} | 🏥 ${apt.servicio}
                             </div>
@@ -633,6 +777,7 @@
                                 📅 ${new Date(apt.fecha).toLocaleDateString('es-PE')} - ⏰ ${apt.hora}
                             </div>
                             ${apt.notas ? `<div class="patient-details">📝 ${apt.notas}</div>` : ''}
+                            ${wpText ? `<div class="patient-details">${wpText}</div>` : ''}
                             <span class="status-badge ${statusType}">${statusText}</span>
                         </div>
                         <button class="btn btn-danger" onclick="eliminarCita(${apt.id})">Eliminar</button>
@@ -667,23 +812,42 @@
 
             appointments.forEach(apt => {
                 const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
-                const diff = appointmentTime - now;
-                const minutesDiff = Math.floor(diff / (1000 * 60));
-                const secondsDiff = Math.floor((diff / 1000) % 60);
+                const diffMs = appointmentTime - now;
+                const minutesDiff = Math.floor(diffMs / (1000 * 60));
+                const secondsDiff = Math.floor((diffMs / 1000) % 60);
 
-                // Alerta 30 minutos antes
+                // WhatsApp: 6 / 4 / 2 / 1 horas antes (solo prepara payload + punto de integración backend)
+                if (apt.wp6h && minutesDiff === 360 && secondsDiff === 0 && !apt.wpSent6h) {
+                    sendWhatsAppReminder(apt, 6);
+                    apt.wpSent6h = true;
+                }
+
+                if (apt.wp4h && minutesDiff === 240 && secondsDiff === 0 && !apt.wpSent4h) {
+                    sendWhatsAppReminder(apt, 4);
+                    apt.wpSent4h = true;
+                }
+
+                if (apt.wp2h && minutesDiff === 120 && secondsDiff === 0 && !apt.wpSent2h) {
+                    sendWhatsAppReminder(apt, 2);
+                    apt.wpSent2h = true;
+                }
+
+                if (apt.wp1h && minutesDiff === 60 && secondsDiff === 0 && !apt.wpSent1h) {
+                    sendWhatsAppReminder(apt, 1);
+                    apt.wpSent1h = true;
+                }
+
+                // Alarmas de voz locales: 30 min / 15 min / hora exacta
                 if (document.getElementById('alert30min').checked && minutesDiff === 30 && secondsDiff === 0 && !apt.triggered30) {
                     triggerAlarm(apt, 'alert30');
                     apt.triggered30 = true;
                 }
 
-                // Alerta 15 minutos antes
                 if (document.getElementById('alert15min').checked && minutesDiff === 15 && secondsDiff === 0 && !apt.triggered15) {
                     triggerAlarm(apt, 'alert15');
                     apt.triggered15 = true;
                 }
 
-                // Alerta a la hora exacta
                 if (document.getElementById('alertExacta').checked && minutesDiff === 0 && secondsDiff === 0 && !apt.triggeredExacta) {
                     triggerAlarm(apt, 'alertExacta');
                     apt.triggeredExacta = true;
@@ -703,7 +867,7 @@
                     updateCurrentTime();
                     checkAlarms();
                 }, 1000);
-                showNotification('Monitor de citas activado', 'success');
+                showNotification('Monitor de citas activado. Mantén al menos una pestaña abierta para que las alarmas funcionen.', 'success');
             } else {
                 btn.textContent = 'Iniciar Monitor';
                 clearInterval(alarmSoundInterval);
@@ -735,7 +899,7 @@
         renderAppointments();
         updateStats();
 
-        // Restablecer alarmas diarias
+        // Restablecer alarmas diarias (incluye flags de WhatsApp)
         function resetDailyAlarms() {
             const now = new Date();
             appointments = appointments.map(apt => {
@@ -745,7 +909,11 @@
                         ...apt,
                         triggered30: false,
                         triggered15: false,
-                        triggeredExacta: false
+                        triggeredExacta: false,
+                        wpSent1h: false,
+                        wpSent2h: false,
+                        wpSent4h: false,
+                        wpSent6h: false
                     };
                 }
                 return apt;
