@@ -434,8 +434,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="telefono">Teléfono</label>
-                    <input type="tel" id="telefono" placeholder="Ej: +51 999 999 999">
+                    <label for="telefono">Teléfono (con código de país, sin espacios)</label>
+                    <input type="tel" id="telefono" placeholder="Ej: 51999999999">
                 </div>
 
                 <div class="form-group">
@@ -446,7 +446,7 @@
                         <option value="Ortodoncia">Ortodoncia</option>
                         <option value="Resina">Resina</option>
                         <option value="Extracción">Extracción</option>
-                        <option value="Tratamiento">Tratamiento de conducto</option>
+                        <option value="Tratamiento de conducto">Tratamiento de conducto</option>
                         <option value="Otro">Otro</option>
                     </select>
                 </div>
@@ -476,7 +476,7 @@
                             <label><input type="checkbox" id="wp6h"> 6 horas antes</label>
                         </div>
                         <p class="wp-config-text">
-                            Aquí solo se guarda la configuración. El envío real de WhatsApp lo hará tu backend (Twilio / API WhatsApp Business).
+                            La app abrirá automáticamente el chat de WhatsApp en el momento elegido con el mensaje listo para enviar.
                         </p>
                     </div>
                 </div>
@@ -603,40 +603,19 @@
             return `Hola ${appointment.paciente}, te recordamos tu cita de ${appointment.servicio} el ${fechaLocal} a las ${appointment.hora} en el consultorio dental. Por favor confirma tu asistencia.`;
         }
 
-        function sendWhatsAppReminder(appointment, hoursBefore) {
+        function openWhatsApp(appointment, hoursBefore) {
             if (!appointment.telefono) {
-                console.warn('No hay teléfono para este paciente, no se puede preparar WhatsApp');
+                console.warn('No hay teléfono para este paciente.');
+                showNotification(`No se pudo abrir WhatsApp: falta número de teléfono para ${appointment.paciente}`, 'error');
                 return;
             }
             const msg = buildWhatsAppMessage(appointment);
-            const payload = {
-                telefono: appointment.telefono,
-                paciente: appointment.paciente,
-                servicio: appointment.servicio,
-                fecha: appointment.fecha,
-                hora: appointment.hora,
-                horas_antes: hoursBefore,
-                mensaje: msg
-            };
+            const encodedMsg = encodeURIComponent(msg);
+            const phone = appointment.telefono.replace(/\D/g, ''); // solo dígitos
+            const url = `https://wa.me/${phone}?text=${encodedMsg}`;
 
-            console.log('Payload WhatsApp listo para backend:', payload);
-
-            showNotification(
-                `💬 Recordatorio WhatsApp (${hoursBefore}h antes) preparado para ${appointment.paciente}. Conecta tu backend para enviarlo automáticamente.`,
-                'success'
-            );
-
-            // Ejemplo de cómo se conectaría a tu backend:
-            /*
-            fetch('https://tu-backend.com/api/whatsapp-recordatorio', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => console.log('WhatsApp enviado', data))
-            .catch(err => console.error('Error enviando WhatsApp', err));
-            */
+            window.open(url, '_blank');
+            showNotification(`WhatsApp (${hoursBefore}h antes) abierto para ${appointment.paciente}`, 'success');
         }
 
         function agregarCita() {
@@ -816,24 +795,24 @@
                 const minutesDiff = Math.floor(diffMs / (1000 * 60));
                 const secondsDiff = Math.floor((diffMs / 1000) % 60);
 
-                // WhatsApp: 6 / 4 / 2 / 1 horas antes (solo prepara payload + punto de integración backend)
+                // WhatsApp: 6 / 4 / 2 / 1 horas antes (abre link)
                 if (apt.wp6h && minutesDiff === 360 && secondsDiff === 0 && !apt.wpSent6h) {
-                    sendWhatsAppReminder(apt, 6);
+                    openWhatsApp(apt, 6);
                     apt.wpSent6h = true;
                 }
 
                 if (apt.wp4h && minutesDiff === 240 && secondsDiff === 0 && !apt.wpSent4h) {
-                    sendWhatsAppReminder(apt, 4);
+                    openWhatsApp(apt, 4);
                     apt.wpSent4h = true;
                 }
 
                 if (apt.wp2h && minutesDiff === 120 && secondsDiff === 0 && !apt.wpSent2h) {
-                    sendWhatsAppReminder(apt, 2);
+                    openWhatsApp(apt, 2);
                     apt.wpSent2h = true;
                 }
 
                 if (apt.wp1h && minutesDiff === 60 && secondsDiff === 0 && !apt.wpSent1h) {
-                    sendWhatsAppReminder(apt, 1);
+                    openWhatsApp(apt, 1);
                     apt.wpSent1h = true;
                 }
 
@@ -867,7 +846,7 @@
                     updateCurrentTime();
                     checkAlarms();
                 }, 1000);
-                showNotification('Monitor de citas activado. Mantén al menos una pestaña abierta para que las alarmas funcionen.', 'success');
+                showNotification('Monitor de citas activado. Mantén al menos una pestaña abierta para que las alarmas y WhatsApp funcionen.', 'success');
             } else {
                 btn.textContent = 'Iniciar Monitor';
                 clearInterval(alarmSoundInterval);
@@ -899,7 +878,7 @@
         renderAppointments();
         updateStats();
 
-        // Restablecer alarmas diarias (incluye flags de WhatsApp)
+        // Restablecer flags diariamente
         function resetDailyAlarms() {
             const now = new Date();
             appointments = appointments.map(apt => {
@@ -925,3 +904,4 @@
     </script>
 </body>
 </html>
+
