@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recordatorio de Citas - Consultorio Dental</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --color-white: rgba(255, 255, 255, 1);
@@ -34,7 +35,7 @@
             background: linear-gradient(135deg, #e8f5f7 0%, #f0fafb 100%);
             color: var(--color-slate-900);
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
         }
 
         .container {
@@ -44,13 +45,13 @@
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         h1 {
-            font-size: 32px;
+            font-size: 28px;
             color: var(--color-teal-500);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .subtitle {
@@ -60,21 +61,21 @@
 
         .main-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
             .main-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
         }
 
         .card {
             background: var(--color-white);
             border-radius: 12px;
-            padding: 24px;
+            padding: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(33, 128, 141, 0.1);
         }
@@ -95,7 +96,8 @@
         input[type="date"],
         input[type="time"],
         input[type="tel"],
-        select {
+        select,
+        textarea {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--color-gray-300);
@@ -105,11 +107,9 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input[type="text"]:focus,
-        input[type="date"]:focus,
-        input[type="time"]:focus,
-        input[type="tel"]:focus,
-        select:focus {
+        input:focus,
+        select:focus,
+        textarea:focus {
             outline: none;
             border-color: var(--color-teal-500);
             box-shadow: 0 0 0 3px rgba(33, 128, 141, 0.1);
@@ -258,10 +258,10 @@
 
         .current-time {
             text-align: center;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: var(--color-teal-500);
-            padding: 20px;
+            padding: 18px;
             background: linear-gradient(135deg, #f0fafb 0%, #e0f2f4 100%);
             border-radius: 10px;
             margin-bottom: 16px;
@@ -271,11 +271,13 @@
         .controls {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-small {
             flex: 1;
-            padding: 10px 16px;
+            min-width: 120px;
+            padding: 10px 12px;
             font-size: 12px;
         }
 
@@ -290,7 +292,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             animation: slideIn 0.3s ease-out;
-            max-width: 300px;
+            max-width: 320px;
         }
 
         .notification.error {
@@ -316,7 +318,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
@@ -328,7 +330,7 @@
         }
 
         .stat-number {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--color-teal-500);
         }
@@ -339,10 +341,11 @@
             margin-top: 4px;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 576px) {
             .stats {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: 1fr;
             }
+            h1 { font-size: 24px; }
         }
 
         .wp-options {
@@ -373,6 +376,7 @@
             font-weight: 500;
             margin-bottom: 0;
             color: var(--color-slate-500);
+            cursor: pointer;
         }
 
         .wp-options-row input[type="checkbox"] {
@@ -399,6 +403,24 @@
             font-size: 11px;
             color: var(--color-slate-500);
             margin-top: 4px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -463,20 +485,20 @@
 
                 <div class="form-group">
                     <label for="notas">Notas</label>
-                    <input type="text" id="notas" placeholder="Información adicional" style="min-height: 60px; padding: 10px 12px;">
+                    <textarea id="notas" rows="2" placeholder="Información adicional"></textarea>
                 </div>
 
                 <div class="form-group">
                     <div class="wp-options">
                         <div class="wp-options-title">Recordatorio por WhatsApp al paciente</div>
                         <div class="wp-options-row">
-                            <label><input type="checkbox" id="wp1h"> 1 hora antes</label>
-                            <label><input type="checkbox" id="wp2h"> 2 horas antes</label>
-                            <label><input type="checkbox" id="wp4h"> 4 horas antes</label>
-                            <label><input type="checkbox" id="wp6h"> 6 horas antes</label>
+                            <label for="wp1h"><input type="checkbox" id="wp1h"> 1 hora antes</label>
+                            <label for="wp2h"><input type="checkbox" id="wp2h"> 2 horas antes</label>
+                            <label for="wp4h"><input type="checkbox" id="wp4h"> 4 horas antes</label>
+                            <label for="wp6h"><input type="checkbox" id="wp6h"> 6 horas antes</label>
                         </div>
                         <p class="wp-config-text">
-                            La app abrirá automáticamente el chat de WhatsApp en el momento elegido con el mensaje listo para enviar.
+                            La app abrirá automáticamente el chat de WhatsApp con mensaje preescrito.
                         </p>
                     </div>
                 </div>
@@ -496,19 +518,19 @@
                     <button class="btn btn-success btn-small" onclick="testAlarm()">Test Audio</button>
                 </div>
 
-                <div style="margin-top: 20px;">
+                <div style="margin-top: 16px;">
                     <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--color-slate-900);">Configuración de Alertas</h3>
-                    <div class="form-group" style="display: flex; align-items: center; margin-bottom: 12px;">
-                        <input type="checkbox" id="alert30min" checked style="width: 18px; height: 18px; cursor: pointer;">
-                        <label style="margin: 0 0 0 8px; margin-bottom: 0; cursor: pointer;">Alerta 30 min antes</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="alert30min" checked>
+                        <label for="alert30min">Alerta 30 min antes</label>
                     </div>
-                    <div class="form-group" style="display: flex; align-items: center; margin-bottom: 12px;">
-                        <input type="checkbox" id="alert15min" checked style="width: 18px; height: 18px; cursor: pointer;">
-                        <label style="margin: 0 0 0 8px; margin-bottom: 0; cursor: pointer;">Alerta 15 min antes</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="alert15min" checked>
+                        <label for="alert15min">Alerta 15 min antes</label>
                     </div>
-                    <div class="form-group" style="display: flex; align-items: center;">
-                        <input type="checkbox" id="alertExacta" checked style="width: 18px; height: 18px; cursor: pointer;">
-                        <label style="margin: 0 0 0 8px; margin-bottom: 0; cursor: pointer;">Alerta a la hora exacta</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="alertExacta" checked>
+                        <label for="alertExacta">Alerta a la hora exacta</label>
                     </div>
                 </div>
             </div>
@@ -526,10 +548,64 @@
     </div>
 
     <script>
+        // Variables globales
         let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
         let monitorActive = false;
-        let alarmSoundInterval;
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let alarmSoundInterval = null;
+        let audioContext = null;
+
+        // ✅ Función para inicializar AudioContext tras interacción
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().catch(e => console.warn('Audio resume failed:', e));
+            }
+        }
+
+        // ✅ Función para parsear fecha y hora en zona local (evita errores UTC)
+        function parseLocalDateTime(dateStr, timeStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const [h, min] = timeStr.split(':').map(Number);
+            return new Date(y, m - 1, d, h, min);
+        }
+
+        // ✅ Función para obtener fecha local en formato amigable (sin UTC shift)
+        function formatLocalDate(dateStr) {
+            const dt = parseLocalDateTime(dateStr, '12:00');
+            return dt.toLocaleDateString('es-PE', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short'
+            });
+        }
+
+        // Al cargar: reiniciar flags de alarmas para citas pasadas
+        (function initApp() {
+            const now = new Date();
+            appointments = appointments.map(apt => {
+                const aptTime = parseLocalDateTime(apt.fecha, apt.hora);
+                if (aptTime < now) {
+                    return {
+                        ...apt,
+                        triggered30: false,
+                        triggered15: false,
+                        triggeredExacta: false,
+                        wpSent1h: false,
+                        wpSent2h: false,
+                        wpSent4h: false,
+                        wpSent6h: false
+                    };
+                }
+                return apt;
+            });
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            renderAppointments();
+            updateStats();
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+        })();
 
         function updateCurrentTime() {
             const now = new Date();
@@ -545,58 +621,91 @@
             utterance.rate = 1;
             utterance.pitch = 1;
             utterance.volume = 1;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(utterance);
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
         }
 
         function playAlarmSound() {
+            initAudio(); // Asegurar contexto de audio
+
+            if (!audioContext) {
+                console.warn('AudioContext no disponible.');
+                return;
+            }
+
             const now = new Date();
             const frequencies = [800, 600, 800, 600];
             let index = 0;
 
             const playBeep = () => {
-                if (index >= frequencies.length) {
-                    index = 0;
-                }
-                
+                if (index >= frequencies.length) return;
+
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-                
+
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-                
+
                 oscillator.frequency.value = frequencies[index];
                 oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+
+                gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-                
+
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.2);
-                
+
                 index++;
             };
 
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < frequencies.length * 2; i++) {
                 setTimeout(playBeep, i * 250);
             }
         }
 
         function triggerAlarm(appointment, type) {
             const timeTypes = {
-                'alert30': '30 minutos antes de la cita',
-                'alert15': '15 minutos antes de la cita',
-                'alertExacta': 'Hora de la cita'
+                'alert30': '30 minutos antes',
+                'alert15': '15 minutos antes',
+                'alertExacta': 'en este momento'
             };
 
             playAlarmSound();
-            
-            const message = `Alerta. Tienes cita con ${appointment.paciente} para ${appointment.servicio}. ${timeTypes[type]}.`;
-            setTimeout(() => {
-                speakMessage(message);
-            }, 500);
+
+            const message = `🔔 ¡Atención! Cita con ${appointment.paciente} para ${appointment.servicio}, ${timeTypes[type]}.`;
+            setTimeout(() => speakMessage(message), 500);
 
             showNotification(`⏰ ${message}`, 'success');
+        }
+
+        function buildWhatsAppMessage(appointment) {
+            const fechaLocal = formatLocalDate(appointment.fecha);
+            let msg = `Hola ${appointment.paciente}, te recordamos tu cita de *${appointment.servicio}* el *${fechaLocal}* a las *${appointment.hora}* en el consultorio dental.`;
+            if (appointment.notas) {
+                msg += ` Notas: _${appointment.notas}_.`;
+            }
+            msg += ' Por favor responde para confirmar tu asistencia. Gracias.';
+            return msg;
+        }
+
+        function openWhatsApp(appointment, hoursBefore) {
+            if (!appointment.telefono) {
+                showNotification(`No se puede abrir WhatsApp: falta teléfono para ${appointment.paciente}`, 'error');
+                return;
+            }
+
+            let phone = appointment.telefono.replace(/\D/g, '');
+            if (phone.length < 8 || phone.length > 15) {
+                showNotification(`Teléfono inválido: "${appointment.telefono}". Debe tener 8-15 dígitos.`, 'error');
+                return;
+            }
+
+            const msg = buildWhatsAppMessage(appointment);
+            const encodedMsg = encodeURIComponent(msg);
+            const url = `https://wa.me/${phone}?text=${encodedMsg}`; // ✅ Corregido: sin espacios
+
+            window.open(url, '_blank');
+            showNotification(`✅ WhatsApp (${hoursBefore}h antes) abierto para ${appointment.paciente}`, 'success');
         }
 
         function agregarCita() {
@@ -613,7 +722,7 @@
             const wp6h = document.getElementById('wp6h').checked;
 
             if (!paciente || !fecha || !hora) {
-                showNotification('Por favor completa los campos requeridos', 'error');
+                showNotification('Por favor completa los campos requeridos: Nombre, Fecha y Hora.', 'error');
                 return;
             }
 
@@ -640,20 +749,18 @@
 
             appointments.push(appointment);
             localStorage.setItem('appointments', JSON.stringify(appointments));
-            
+
             renderAppointments();
-            showNotification(`✅ Cita de ${paciente} agregada correctamente`, 'success');
-            
+            showNotification(`✅ Cita de ${paciente} registrada`, 'success');
+
+            // Limpiar formulario
             document.getElementById('paciente').value = '';
             document.getElementById('telefono').value = '';
             document.getElementById('servicio').value = 'Consulta';
             document.getElementById('fecha').value = '';
             document.getElementById('hora').value = '';
             document.getElementById('notas').value = '';
-            document.getElementById('wp1h').checked = false;
-            document.getElementById('wp2h').checked = false;
-            document.getElementById('wp4h').checked = false;
-            document.getElementById('wp6h').checked = false;
+            ['wp1h', 'wp2h', 'wp4h', 'wp6h'].forEach(id => document.getElementById(id).checked = false);
         }
 
         function eliminarCita(id) {
@@ -664,27 +771,25 @@
         }
 
         function getWhatsappConfigText(apt) {
-            const selected = [];
-            if (apt.wp1h) selected.push('1h');
-            if (apt.wp2h) selected.push('2h');
-            if (apt.wp4h) selected.push('4h');
-            if (apt.wp6h) selected.push('6h');
-
-            if (selected.length === 0) return '';
-            return `WhatsApp: ${selected.join(' / ')} antes`;
+            const sel = [];
+            if (apt.wp1h) sel.push('1h');
+            if (apt.wp2h) sel.push('2h');
+            if (apt.wp4h) sel.push('4h');
+            if (apt.wp6h) sel.push('6h');
+            return sel.length ? `WA: ${sel.join(' / ')}` : '';
         }
 
         function renderAppointments() {
             const now = new Date();
-            const sortedAppointments = [...appointments].sort((a, b) => {
-                const dateA = new Date(`${a.fecha}T${a.hora}`);
-                const dateB = new Date(`${b.fecha}T${b.hora}`);
-                return dateA - dateB;
+            const sorted = [...appointments].sort((a, b) => {
+                const ta = parseLocalDateTime(a.fecha, a.hora);
+                const tb = parseLocalDateTime(b.fecha, b.hora);
+                return ta - tb;
             });
 
             const list = document.getElementById('appointmentsList');
-            
-            if (sortedAppointments.length === 0) {
+
+            if (sorted.length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">📅</div>
@@ -695,49 +800,46 @@
                 return;
             }
 
-            list.innerHTML = sortedAppointments.map(apt => {
-                const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
-                const diff = appointmentTime - now;
-                const minutesDiff = Math.floor(diff / (1000 * 60));
-                
-                let statusClass = '';
-                let statusText = '';
-                let statusType = '';
+            list.innerHTML = sorted.map(apt => {
+                const aptTime = parseLocalDateTime(apt.fecha, apt.hora);
+                const diff = aptTime - now;
+                const minDiff = Math.floor(diff / 60000);
+
+                let statusText, statusClass, statusType;
 
                 if (diff < 0) {
-                    statusClass = 'completed';
                     statusText = '✓ Completada';
                     statusType = 'status-next';
-                } else if (minutesDiff <= 15) {
-                    statusClass = 'upcoming';
-                    statusText = '⚠️ Próximamente';
+                } else if (minDiff <= 15) {
+                    statusText = '⚠️ Inminente';
                     statusType = 'status-alert';
-                } else if (minutesDiff <= 30) {
-                    statusClass = 'alert';
+                    statusClass = 'upcoming';
+                } else if (minDiff <= 30) {
                     statusText = '🔔 En breve';
                     statusType = 'status-soon';
+                    statusClass = 'alert';
                 } else {
-                    statusText = '📅 Próxima';
+                    statusText = '📅 Programada';
                     statusType = 'status-next';
                 }
 
                 const wpText = getWhatsappConfigText(apt);
+                const fechaLocal = formatLocalDate(apt.fecha);
 
                 return `
-                    <div class="appointment-item ${statusClass}">
+                    <div class="appointment-item ${statusClass || ''}">
                         <div class="appointment-info">
                             <div class="patient-name">
                                 ${apt.paciente}
-                                ${wpText ? `<span class="wp-badge">WA programado</span>` : ''}
+                                ${wpText ? `<span class="wp-badge">${wpText}</span>` : ''}
                             </div>
                             <div class="patient-details">
-                                📞 ${apt.telefono || 'Sin teléfono'} | 🏥 ${apt.servicio}
+                                📞 ${apt.telefono || '—'} | 🏥 ${apt.servicio}
                             </div>
                             <div class="patient-details">
-                                📅 ${new Date(apt.fecha).toLocaleDateString('es-PE')} - ⏰ ${apt.hora}
+                                📅 ${fechaLocal} - ⏰ ${apt.hora}
                             </div>
                             ${apt.notas ? `<div class="patient-details">📝 ${apt.notas}</div>` : ''}
-                            ${wpText ? `<div class="patient-details">${wpText}</div>` : ''}
                             <span class="status-badge ${statusType}">${statusText}</span>
                         </div>
                         <button class="btn btn-danger" onclick="eliminarCita(${apt.id})">Eliminar</button>
@@ -755,82 +857,57 @@
             document.getElementById('totalCitas').textContent = appointments.length;
             document.getElementById('citasHoy').textContent = appointments.filter(a => a.fecha === today).length;
 
-            const nextApt = appointments
-                .filter(a => new Date(`${a.fecha}T${a.hora}`) > now)
-                .sort((a, b) => new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`))
+            const next = appointments
+                .filter(a => parseLocalDateTime(a.fecha, a.hora) > now)
+                .sort((a, b) => parseLocalDateTime(a.fecha, a.hora) - parseLocalDateTime(b.fecha, b.hora))
                 .shift();
 
-            if (nextApt) {
-                document.getElementById('proximaCita').textContent = nextApt.hora;
-            } else {
-                document.getElementById('proximaCita').textContent = '--:--';
-            }
-        }
-
-        function buildWhatsAppMessage(appointment) {
-            const fechaLocal = new Date(appointment.fecha).toLocaleDateString('es-PE');
-            return `Hola ${appointment.paciente}, te recordamos tu cita de ${appointment.servicio} el ${fechaLocal} a las ${appointment.hora} en el consultorio dental. Por favor confirma tu asistencia.`;
-        }
-
-        function openWhatsApp(appointment, hoursBefore) {
-            if (!appointment.telefono) {
-                console.warn('No hay teléfono para este paciente.');
-                showNotification(`No se pudo abrir WhatsApp: falta número de teléfono para ${appointment.paciente}`, 'error');
-                return;
-            }
-            const msg = buildWhatsAppMessage(appointment);
-            const encodedMsg = encodeURIComponent(msg);
-            const phone = appointment.telefono.replace(/\D/g, '');
-            const url = `https://wa.me/${phone}?text=${encodedMsg}`;
-
-            window.open(url, '_blank');
-            showNotification(`WhatsApp (${hoursBefore}h antes) abierto para ${appointment.paciente}`, 'success');
+            document.getElementById('proximaCita').textContent = next ? next.hora : '--:--';
         }
 
         function checkAlarms() {
             const now = new Date();
 
             appointments.forEach(apt => {
-                const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
-                const diffMs = appointmentTime - now;
-                const minutesDiff = Math.floor(diffMs / (1000 * 60));
+                const aptTime = parseLocalDateTime(apt.fecha, apt.hora);
+                const diffMs = aptTime - now;
+                const minutesDiff = Math.floor(diffMs / 60000);
                 const secondsDiff = Math.floor((diffMs / 1000) % 60);
 
-                // WhatsApp: 6 / 4 / 2 / 1 horas antes (abre link)
-                if (apt.wp6h && minutesDiff === 360 && secondsDiff === 0 && !apt.wpSent6h) {
-                    openWhatsApp(apt, 6);
-                    apt.wpSent6h = true;
+                // WhatsApp (solo en segundos = 0 para evitar repeticiones)
+                if (secondsDiff === 0) {
+                    if (apt.wp6h && minutesDiff === 360 && !apt.wpSent6h) {
+                        openWhatsApp(apt, 6);
+                        apt.wpSent6h = true;
+                    }
+                    if (apt.wp4h && minutesDiff === 240 && !apt.wpSent4h) {
+                        openWhatsApp(apt, 4);
+                        apt.wpSent4h = true;
+                    }
+                    if (apt.wp2h && minutesDiff === 120 && !apt.wpSent2h) {
+                        openWhatsApp(apt, 2);
+                        apt.wpSent2h = true;
+                    }
+                    if (apt.wp1h && minutesDiff === 60 && !apt.wpSent1h) {
+                        openWhatsApp(apt, 1);
+                        apt.wpSent1h = true;
+                    }
                 }
 
-                if (apt.wp4h && minutesDiff === 240 && secondsDiff === 0 && !apt.wpSent4h) {
-                    openWhatsApp(apt, 4);
-                    apt.wpSent4h = true;
-                }
-
-                if (apt.wp2h && minutesDiff === 120 && secondsDiff === 0 && !apt.wpSent2h) {
-                    openWhatsApp(apt, 2);
-                    apt.wpSent2h = true;
-                }
-
-                if (apt.wp1h && minutesDiff === 60 && secondsDiff === 0 && !apt.wpSent1h) {
-                    openWhatsApp(apt, 1);
-                    apt.wpSent1h = true;
-                }
-
-                // Alarmas de voz locales: 30 min / 15 min / hora exacta
-                if (document.getElementById('alert30min').checked && minutesDiff === 30 && secondsDiff === 0 && !apt.triggered30) {
-                    triggerAlarm(apt, 'alert30');
-                    apt.triggered30 = true;
-                }
-
-                if (document.getElementById('alert15min').checked && minutesDiff === 15 && secondsDiff === 0 && !apt.triggered15) {
-                    triggerAlarm(apt, 'alert15');
-                    apt.triggered15 = true;
-                }
-
-                if (document.getElementById('alertExacta').checked && minutesDiff === 0 && secondsDiff === 0 && !apt.triggeredExacta) {
-                    triggerAlarm(apt, 'alertExacta');
-                    apt.triggeredExacta = true;
+                // Alarmas locales
+                if (secondsDiff === 0) {
+                    if (document.getElementById('alert30min').checked && minutesDiff === 30 && !apt.triggered30) {
+                        triggerAlarm(apt, 'alert30');
+                        apt.triggered30 = true;
+                    }
+                    if (document.getElementById('alert15min').checked && minutesDiff === 15 && !apt.triggered15) {
+                        triggerAlarm(apt, 'alert15');
+                        apt.triggered15 = true;
+                    }
+                    if (document.getElementById('alertExacta').checked && minutesDiff === 0 && !apt.triggeredExacta) {
+                        triggerAlarm(apt, 'alertExacta');
+                        apt.triggeredExacta = true;
+                    }
                 }
             });
 
@@ -838,28 +915,30 @@
         }
 
         function toggleMonitor() {
+            initAudio();
             monitorActive = !monitorActive;
+
             const btn = document.getElementById('monitorBtnText');
-            
+            clearInterval(alarmSoundInterval); // ✅ Evita duplicados
+
             if (monitorActive) {
                 btn.textContent = 'Monitor Activo ✓';
                 alarmSoundInterval = setInterval(() => {
                     updateCurrentTime();
                     checkAlarms();
                 }, 1000);
-                showNotification('Monitor de citas activado. Mantén al menos una pestaña abierta para que las alarmas y WhatsApp funcionen.', 'success');
+                showNotification('✅ Monitor activado. Mantén esta pestaña abierta para recibir alertas.', 'success');
             } else {
                 btn.textContent = 'Iniciar Monitor';
-                clearInterval(alarmSoundInterval);
-                showNotification('Monitor de citas desactivado', 'success');
+                showNotification('⏹️ Monitor desactivado.', 'success');
             }
         }
 
         function testAlarm() {
+            initAudio();
             playAlarmSound();
-            setTimeout(() => {
-                speakMessage('Sistema de alarma funcionando correctamente. Las alertas se activarán en los tiempos programados.');
-            }, 500);
+            setTimeout(() => speakMessage('Sistema de alertas funcionando correctamente.'), 500);
+            showNotification('🔊 Prueba de alarma ejecutada', 'success');
         }
 
         function showNotification(message, type = 'info') {
@@ -867,41 +946,8 @@
             notif.className = `notification ${type}`;
             notif.textContent = message;
             document.body.appendChild(notif);
-
-            setTimeout(() => {
-                notif.remove();
-            }, 4000);
+            setTimeout(() => notif.remove(), 4000);
         }
-
-        // Inicializar
-        updateCurrentTime();
-        setInterval(updateCurrentTime, 1000);
-        renderAppointments();
-        updateStats();
-
-        // Restablecer flags diariamente
-        function resetDailyAlarms() {
-            const now = new Date();
-            appointments = appointments.map(apt => {
-                const appointmentTime = new Date(`${apt.fecha}T${apt.hora}`);
-                if (appointmentTime < now && appointmentTime.toDateString() !== now.toDateString()) {
-                    return {
-                        ...apt,
-                        triggered30: false,
-                        triggered15: false,
-                        triggeredExacta: false,
-                        wpSent1h: false,
-                        wpSent2h: false,
-                        wpSent4h: false,
-                        wpSent6h: false
-                    };
-                }
-                return apt;
-            });
-            localStorage.setItem('appointments', JSON.stringify(appointments));
-        }
-
-        setInterval(resetDailyAlarms, 60000);
     </script>
 </body>
 </html>
