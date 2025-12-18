@@ -119,14 +119,15 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 10px 20px;
+            padding: 8px 14px;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             font-family: inherit;
+            gap: 6px;
         }
 
         .btn-primary {
@@ -140,26 +141,23 @@
             transform: translateY(-1px);
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
         .btn-danger {
             background: var(--color-red-500);
             color: var(--color-white);
-            padding: 8px 12px;
-            font-size: 12px;
         }
 
         .btn-danger:hover {
             background: var(--color-red-400);
         }
 
-        .btn-success {
-            background: var(--color-green-500);
-            color: var(--color-white);
-            padding: 8px 12px;
-            font-size: 12px;
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: #128C7E;
+            transform: translateY(-1px);
         }
 
         .appointment-list {
@@ -238,7 +236,9 @@
 
         .appointment-actions {
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
         }
 
         .empty-state {
@@ -490,15 +490,15 @@
 
                 <div class="form-group">
                     <div class="wp-options">
-                        <div class="wp-options-title">Recordatorio por WhatsApp al paciente</div>
+                        <div class="wp-options-title">Recordatorio automático por WhatsApp</div>
                         <div class="wp-options-row">
-                            <label for="wp1h"><input type="checkbox" id="wp1h"> 1 hora antes</label>
-                            <label for="wp2h"><input type="checkbox" id="wp2h"> 2 horas antes</label>
-                            <label for="wp4h"><input type="checkbox" id="wp4h"> 4 horas antes</label>
-                            <label for="wp6h"><input type="checkbox" id="wp6h"> 6 horas antes</label>
+                            <label for="wp1h"><input type="checkbox" id="wp1h"> 1h antes</label>
+                            <label for="wp2h"><input type="checkbox" id="wp2h"> 2h antes</label>
+                            <label for="wp4h"><input type="checkbox" id="wp4h"> 4h antes</label>
+                            <label for="wp6h"><input type="checkbox" id="wp6h"> 6h antes</label>
                         </div>
                         <p class="wp-config-text">
-                            La app abrirá automáticamente el chat de WhatsApp con mensaje preescrito.
+                            Se abrirá automáticamente el chat de WhatsApp en el momento programado.
                         </p>
                     </div>
                 </div>
@@ -548,13 +548,11 @@
     </div>
 
     <script>
-        // Variables globales
         let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
         let monitorActive = false;
         let alarmSoundInterval = null;
         let audioContext = null;
 
-        // ✅ Función para inicializar AudioContext tras interacción
         function initAudio() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -564,14 +562,12 @@
             }
         }
 
-        // ✅ Función para parsear fecha y hora en zona local (evita errores UTC)
         function parseLocalDateTime(dateStr, timeStr) {
             const [y, m, d] = dateStr.split('-').map(Number);
             const [h, min] = timeStr.split(':').map(Number);
             return new Date(y, m - 1, d, h, min);
         }
 
-        // ✅ Función para obtener fecha local en formato amigable (sin UTC shift)
         function formatLocalDate(dateStr) {
             const dt = parseLocalDateTime(dateStr, '12:00');
             return dt.toLocaleDateString('es-PE', {
@@ -581,7 +577,6 @@
             });
         }
 
-        // Al cargar: reiniciar flags de alarmas para citas pasadas
         (function initApp() {
             const now = new Date();
             appointments = appointments.map(apt => {
@@ -626,39 +621,28 @@
         }
 
         function playAlarmSound() {
-            initAudio(); // Asegurar contexto de audio
+            initAudio();
+            if (!audioContext) return;
 
-            if (!audioContext) {
-                console.warn('AudioContext no disponible.');
-                return;
-            }
-
-            const now = new Date();
             const frequencies = [800, 600, 800, 600];
             let index = 0;
 
             const playBeep = () => {
                 if (index >= frequencies.length) return;
-
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-
                 oscillator.frequency.value = frequencies[index];
                 oscillator.type = 'sine';
-
                 gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.2);
-
                 index++;
             };
 
-            for (let i = 0; i < frequencies.length * 2; i++) {
+            for (let i = 0; i < 8; i++) {
                 setTimeout(playBeep, i * 250);
             }
         }
@@ -669,12 +653,9 @@
                 'alert15': '15 minutos antes',
                 'alertExacta': 'en este momento'
             };
-
             playAlarmSound();
-
             const message = `🔔 ¡Atención! Cita con ${appointment.paciente} para ${appointment.servicio}, ${timeTypes[type]}.`;
             setTimeout(() => speakMessage(message), 500);
-
             showNotification(`⏰ ${message}`, 'success');
         }
 
@@ -688,24 +669,26 @@
             return msg;
         }
 
-        function openWhatsApp(appointment, hoursBefore) {
-            if (!appointment.telefono) {
-                showNotification(`No se puede abrir WhatsApp: falta teléfono para ${appointment.paciente}`, 'error');
-                return;
-            }
-
-            let phone = appointment.telefono.replace(/\D/g, '');
-            if (phone.length < 8 || phone.length > 15) {
-                showNotification(`Teléfono inválido: "${appointment.telefono}". Debe tener 8-15 dígitos.`, 'error');
-                return;
-            }
-
-            const msg = buildWhatsAppMessage(appointment);
-            const encodedMsg = encodeURIComponent(msg);
-            const url = `https://wa.me/${phone}?text=${encodedMsg}`; // ✅ Corregido: sin espacios
-
+        function openWhatsApp(phone, message) {
+            const encodedMsg = encodeURIComponent(message);
+            const url = `https://wa.me/${phone}?text=${encodedMsg}`;
             window.open(url, '_blank');
-            showNotification(`✅ WhatsApp (${hoursBefore}h antes) abierto para ${appointment.paciente}`, 'success');
+        }
+
+        function sendWhatsAppNow(id) {
+            const apt = appointments.find(a => a.id === id);
+            if (!apt || !apt.telefono) {
+                showNotification('No se puede enviar: falta número de teléfono.', 'error');
+                return;
+            }
+            const phone = apt.telefono.replace(/\D/g, '');
+            if (phone.length < 8 || phone.length > 15) {
+                showNotification(`Teléfono inválido: "${apt.telefono}"`, 'error');
+                return;
+            }
+            const msg = buildWhatsAppMessage(apt);
+            openWhatsApp(phone, msg);
+            showNotification(`📲 WhatsApp enviado a ${apt.paciente}`, 'success');
         }
 
         function agregarCita() {
@@ -722,11 +705,11 @@
             const wp6h = document.getElementById('wp6h').checked;
 
             if (!paciente || !fecha || !hora) {
-                showNotification('Por favor completa los campos requeridos: Nombre, Fecha y Hora.', 'error');
+                showNotification('Campos obligatorios: Nombre, Fecha y Hora.', 'error');
                 return;
             }
 
-            const appointment = {
+            appointments.push({
                 id: Date.now(),
                 paciente,
                 telefono,
@@ -745,22 +728,15 @@
                 wpSent2h: false,
                 wpSent4h: false,
                 wpSent6h: false
-            };
+            });
 
-            appointments.push(appointment);
             localStorage.setItem('appointments', JSON.stringify(appointments));
-
             renderAppointments();
             showNotification(`✅ Cita de ${paciente} registrada`, 'success');
 
-            // Limpiar formulario
-            document.getElementById('paciente').value = '';
-            document.getElementById('telefono').value = '';
+            ['paciente','telefono','fecha','hora','notas'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('servicio').value = 'Consulta';
-            document.getElementById('fecha').value = '';
-            document.getElementById('hora').value = '';
-            document.getElementById('notas').value = '';
-            ['wp1h', 'wp2h', 'wp4h', 'wp6h'].forEach(id => document.getElementById(id).checked = false);
+            ['wp1h','wp2h','wp4h','wp6h'].forEach(id => document.getElementById(id).checked = false);
         }
 
         function eliminarCita(id) {
@@ -788,12 +764,11 @@
             });
 
             const list = document.getElementById('appointmentsList');
-
             if (sorted.length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">📅</div>
-                        <p>No hay citas registradas. Agrega una nueva cita para comenzar.</p>
+                        <p>No hay citas registradas.</p>
                     </div>
                 `;
                 updateStats();
@@ -806,7 +781,6 @@
                 const minDiff = Math.floor(diff / 60000);
 
                 let statusText, statusClass, statusType;
-
                 if (diff < 0) {
                     statusText = '✓ Completada';
                     statusType = 'status-next';
@@ -826,6 +800,13 @@
                 const wpText = getWhatsappConfigText(apt);
                 const fechaLocal = formatLocalDate(apt.fecha);
 
+                // ✅ Botones condicionales: WhatsApp solo si hay teléfono
+                const whatsappBtn = apt.telefono 
+                    ? `<button class="btn btn-whatsapp" onclick="sendWhatsAppNow(${apt.id})">
+                          <span>📲</span> WhatsApp
+                       </button>`
+                    : '';
+
                 return `
                     <div class="appointment-item ${statusClass || ''}">
                         <div class="appointment-info">
@@ -842,7 +823,12 @@
                             ${apt.notas ? `<div class="patient-details">📝 ${apt.notas}</div>` : ''}
                             <span class="status-badge ${statusType}">${statusText}</span>
                         </div>
-                        <button class="btn btn-danger" onclick="eliminarCita(${apt.id})">Eliminar</button>
+                        <div class="appointment-actions">
+                            ${whatsappBtn}
+                            <button class="btn btn-danger" onclick="eliminarCita(${apt.id})">
+                                <span>🗑️</span> Eliminar
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -853,7 +839,6 @@
         function updateStats() {
             const now = new Date();
             const today = now.toISOString().split('T')[0];
-
             document.getElementById('totalCitas').textContent = appointments.length;
             document.getElementById('citasHoy').textContent = appointments.filter(a => a.fecha === today).length;
 
@@ -861,73 +846,72 @@
                 .filter(a => parseLocalDateTime(a.fecha, a.hora) > now)
                 .sort((a, b) => parseLocalDateTime(a.fecha, a.hora) - parseLocalDateTime(b.fecha, b.hora))
                 .shift();
-
             document.getElementById('proximaCita').textContent = next ? next.hora : '--:--';
         }
 
         function checkAlarms() {
             const now = new Date();
-
             appointments.forEach(apt => {
                 const aptTime = parseLocalDateTime(apt.fecha, apt.hora);
                 const diffMs = aptTime - now;
                 const minutesDiff = Math.floor(diffMs / 60000);
                 const secondsDiff = Math.floor((diffMs / 1000) % 60);
 
-                // WhatsApp (solo en segundos = 0 para evitar repeticiones)
                 if (secondsDiff === 0) {
+                    // WhatsApp programado
                     if (apt.wp6h && minutesDiff === 360 && !apt.wpSent6h) {
-                        openWhatsApp(apt, 6);
+                        const msg = buildWhatsAppMessage(apt);
+                        openWhatsApp(apt.telefono.replace(/\D/g, ''), msg);
                         apt.wpSent6h = true;
+                        showNotification(`📲 WhatsApp (6h) → ${apt.paciente}`, 'success');
                     }
                     if (apt.wp4h && minutesDiff === 240 && !apt.wpSent4h) {
-                        openWhatsApp(apt, 4);
+                        const msg = buildWhatsAppMessage(apt);
+                        openWhatsApp(apt.telefono.replace(/\D/g, ''), msg);
                         apt.wpSent4h = true;
+                        showNotification(`📲 WhatsApp (4h) → ${apt.paciente}`, 'success');
                     }
                     if (apt.wp2h && minutesDiff === 120 && !apt.wpSent2h) {
-                        openWhatsApp(apt, 2);
+                        const msg = buildWhatsAppMessage(apt);
+                        openWhatsApp(apt.telefono.replace(/\D/g, ''), msg);
                         apt.wpSent2h = true;
+                        showNotification(`📲 WhatsApp (2h) → ${apt.paciente}`, 'success');
                     }
                     if (apt.wp1h && minutesDiff === 60 && !apt.wpSent1h) {
-                        openWhatsApp(apt, 1);
+                        const msg = buildWhatsAppMessage(apt);
+                        openWhatsApp(apt.telefono.replace(/\D/g, ''), msg);
                         apt.wpSent1h = true;
+                        showNotification(`📲 WhatsApp (1h) → ${apt.paciente}`, 'success');
                     }
-                }
 
-                // Alarmas locales
-                if (secondsDiff === 0) {
+                    // Alarmas de voz
                     if (document.getElementById('alert30min').checked && minutesDiff === 30 && !apt.triggered30) {
-                        triggerAlarm(apt, 'alert30');
-                        apt.triggered30 = true;
+                        triggerAlarm(apt, 'alert30'); apt.triggered30 = true;
                     }
                     if (document.getElementById('alert15min').checked && minutesDiff === 15 && !apt.triggered15) {
-                        triggerAlarm(apt, 'alert15');
-                        apt.triggered15 = true;
+                        triggerAlarm(apt, 'alert15'); apt.triggered15 = true;
                     }
                     if (document.getElementById('alertExacta').checked && minutesDiff === 0 && !apt.triggeredExacta) {
-                        triggerAlarm(apt, 'alertExacta');
-                        apt.triggeredExacta = true;
+                        triggerAlarm(apt, 'alertExacta'); apt.triggeredExacta = true;
                     }
                 }
             });
-
             localStorage.setItem('appointments', JSON.stringify(appointments));
         }
 
         function toggleMonitor() {
             initAudio();
             monitorActive = !monitorActive;
+            clearInterval(alarmSoundInterval);
 
             const btn = document.getElementById('monitorBtnText');
-            clearInterval(alarmSoundInterval); // ✅ Evita duplicados
-
             if (monitorActive) {
                 btn.textContent = 'Monitor Activo ✓';
                 alarmSoundInterval = setInterval(() => {
                     updateCurrentTime();
                     checkAlarms();
                 }, 1000);
-                showNotification('✅ Monitor activado. Mantén esta pestaña abierta para recibir alertas.', 'success');
+                showNotification('✅ Monitor activado. ¡No cierres esta pestaña!', 'success');
             } else {
                 btn.textContent = 'Iniciar Monitor';
                 showNotification('⏹️ Monitor desactivado.', 'success');
@@ -937,8 +921,7 @@
         function testAlarm() {
             initAudio();
             playAlarmSound();
-            setTimeout(() => speakMessage('Sistema de alertas funcionando correctamente.'), 500);
-            showNotification('🔊 Prueba de alarma ejecutada', 'success');
+            setTimeout(() => speakMessage('Sistema de alertas funcionando.'), 500);
         }
 
         function showNotification(message, type = 'info') {
@@ -950,4 +933,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
